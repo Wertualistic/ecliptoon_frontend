@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: number;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'moderator' | 'translator';
+  role: "user" | "admin" | "moderator" | "translator";
   diamond_balance: number;
   avatar: string | null;
   avatar_url?: string | null;
@@ -20,12 +27,38 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  registerVerifyCode: (email: string, code: string) => Promise<{ success: boolean; message?: string }>;
-  register: (name: string, email: string, password: string, ref?: string | null) => Promise<{ success: boolean; message?: string }>;
-  forgotPasswordRequest: (email: string) => Promise<{ success: boolean; message?: string }>;
-  forgotPasswordVerify: (email: string, code: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  changePassword: (current_password: string, new_password: string) => Promise<{ success: boolean; message?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  registerVerifyCode: (
+    email: string,
+    code: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    ref?: string | null,
+  ) => Promise<{ success: boolean; message?: string }>;
+  forgotPasswordRequest: (
+    email: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  forgotPasswordVerify: (
+    email: string,
+    code: string,
+    password: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  changePassword: (
+    current_password: string,
+    new_password: string,
+  ) => Promise<{ success: boolean; message?: string }>;
+  updateProfile: (payload: {
+    name?: string;
+    email?: string;
+    instagram_url?: string | null;
+    telegram_url?: string | null;
+  }) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateUserBalance: (newBalance: number) => void;
@@ -33,7 +66,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -43,8 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user from storage on mount & trigger a one-time profile refresh
   useEffect(() => {
-    const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('auth_user');
+    const storedToken = localStorage.getItem("auth_token");
+    const storedUser = localStorage.getItem("auth_user");
 
     if (storedToken && storedUser) {
       setToken(storedToken);
@@ -53,56 +87,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Refresh user profile once on startup to ensure balance/avatar are fresh
       fetch(`${API_URL}/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${storedToken}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${storedToken}`,
+          Accept: "application/json",
         },
       })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else if (res.status === 401) {
-          // Token expired, logout
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
-          setToken(null);
-          setUser(null);
-          router.push('/login');
-        }
-      })
-      .then(userData => {
-        if (userData) {
-          setUser(userData);
-          localStorage.setItem('auth_user', JSON.stringify(userData));
-        }
-      })
-      .catch(err => console.error('Startup user refresh failed:', err));
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          } else if (res.status === 401) {
+            // Token expired, logout
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("auth_user");
+            setToken(null);
+            setUser(null);
+            router.push("/login");
+          }
+        })
+        .then((userData) => {
+          if (userData) {
+            setUser(userData);
+            localStorage.setItem("auth_user", JSON.stringify(userData));
+          }
+        })
+        .catch((err) => console.error("Startup user refresh failed:", err));
     }
     setIsLoading(false);
   }, [router]);
 
   // Sync user profile and balance with API
   const refreshUser = useCallback(async () => {
-    const currentToken = token || localStorage.getItem('auth_token');
+    const currentToken = token || localStorage.getItem("auth_token");
     if (!currentToken) return;
 
     try {
       const res = await fetch(`${API_URL}/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${currentToken}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${currentToken}`,
+          Accept: "application/json",
         },
       });
 
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
-        localStorage.setItem('auth_user', JSON.stringify(userData));
+        localStorage.setItem("auth_user", JSON.stringify(userData));
       } else if (res.status === 401) {
         // Token expired or invalid
         logout();
       }
     } catch (err) {
-      console.error('Error refreshing user profile:', err);
+      console.error("Error refreshing user profile:", err);
     }
   }, [token]);
 
@@ -124,10 +158,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
@@ -135,27 +169,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
 
       if (!res.ok) {
-        return { success: false, message: data.message || 'Xatolik yuz berdi' };
+        return { success: false, message: data.message || "Xatolik yuz berdi" };
       }
 
       setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('auth_token', data.token);
-      localStorage.setItem('auth_user', JSON.stringify(data.user));
+      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
 
       return { success: true };
     } catch (err) {
-      return { success: false, message: 'Serverga ulanib bo\'lmadi. Internet aloqasini tekshiring.' };
+      return {
+        success: false,
+        message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring.",
+      };
     }
   };
 
-  const register = async (name: string, email: string, password: string, ref?: string | null) => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    ref?: string | null,
+  ) => {
     try {
       const res = await fetch(`${API_URL}/auth/register-request`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ name, email, password, ref }),
       });
@@ -163,22 +205,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
 
       if (!res.ok) {
-        return { success: false, message: data.message || 'Ro\'yxatdan o\'tishda xatolik yuz berdi' };
+        return {
+          success: false,
+          message: data.message || "Ro'yxatdan o'tishda xatolik yuz berdi",
+        };
       }
 
       return { success: true };
     } catch (err) {
-      return { success: false, message: 'Serverga ulanib bo\'lmadi. Internet aloqasini tekshiring.' };
+      return {
+        success: false,
+        message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring.",
+      };
     }
   };
 
   const registerVerifyCode = async (email: string, code: string) => {
     try {
       const res = await fetch(`${API_URL}/auth/register-verify`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({ email, code }),
       });
@@ -186,98 +234,159 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
 
       if (!res.ok) {
-        return { success: false, message: data.message || 'Tasdiqlash kodi noto\'g\'ri' };
+        return {
+          success: false,
+          message: data.message || "Tasdiqlash kodi noto'g'ri",
+        };
       }
 
       setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('auth_token', data.token);
-      localStorage.setItem('auth_user', JSON.stringify(data.user));
+      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
 
       return { success: true };
     } catch (err) {
-      return { success: false, message: 'Serverga ulanib bo\'lmadi. Internet aloqasini tekshiring.' };
+      return {
+        success: false,
+        message: "Serverga ulanib bo'lmadi. Internet aloqasini tekshiring.",
+      };
     }
   };
 
   const forgotPasswordRequest = async (email: string) => {
     try {
       const res = await fetch(`${API_URL}/auth/forgot-password-request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) return { success: false, message: data.message || 'Xatolik yuz berdi' };
+      if (!res.ok)
+        return { success: false, message: data.message || "Xatolik yuz berdi" };
       return { success: true, message: data.message };
     } catch (err) {
-      return { success: false, message: 'Serverga ulanib bo\'lmadi.' };
+      return { success: false, message: "Serverga ulanib bo'lmadi." };
     }
   };
 
-  const forgotPasswordVerify = async (email: string, code: string, password: string) => {
+  const forgotPasswordVerify = async (
+    email: string,
+    code: string,
+    password: string,
+  ) => {
     try {
       const res = await fetch(`${API_URL}/auth/forgot-password-verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ email, code, password }),
       });
       const data = await res.json();
-      if (!res.ok) return { success: false, message: data.message || 'Tasdiqlash kodi noto\'g\'ri' };
+      if (!res.ok)
+        return {
+          success: false,
+          message: data.message || "Tasdiqlash kodi noto'g'ri",
+        };
       return { success: true, message: data.message };
     } catch (err) {
-      return { success: false, message: 'Serverga ulanib bo\'lmadi.' };
+      return { success: false, message: "Serverga ulanib bo'lmadi." };
     }
   };
 
-  const changePassword = async (current_password: string, new_password: string) => {
-    const currentToken = token || localStorage.getItem('auth_token');
+  const changePassword = async (
+    current_password: string,
+    new_password: string,
+  ) => {
+    const currentToken = token || localStorage.getItem("auth_token");
     try {
       const res = await fetch(`${API_URL}/auth/user/change-password`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${currentToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify({ current_password, new_password }),
       });
       const data = await res.json();
-      if (!res.ok) return { success: false, message: data.message || 'Joriy parol noto\'g\'ri' };
+      if (!res.ok)
+        return {
+          success: false,
+          message: data.message || "Joriy parol noto'g'ri",
+        };
       return { success: true, message: data.message };
     } catch (err) {
-      return { success: false, message: 'Serverga ulanib bo\'lmadi.' };
+      return { success: false, message: "Serverga ulanib bo'lmadi." };
+    }
+  };
+
+  const updateProfile = async (payload: {
+    name?: string;
+    email?: string;
+    instagram_url?: string | null;
+    telegram_url?: string | null;
+  }) => {
+    const currentToken = token || localStorage.getItem("auth_token");
+    if (!currentToken) return { success: false, message: "Not authenticated" };
+    try {
+      const res = await fetch(`${API_URL}/auth/user`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok)
+        return { success: false, message: data.message || "Xatolik yuz berdi" };
+
+      const updatedUser = data.user || data;
+      setUser(updatedUser);
+      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: "Serverga ulanib bo'lmadi." };
     }
   };
 
   const logout = async () => {
-    const currentToken = token || localStorage.getItem('auth_token');
+    const currentToken = token || localStorage.getItem("auth_token");
     if (currentToken) {
       try {
         await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${currentToken}`,
-            'Accept': 'application/json',
+            Authorization: `Bearer ${currentToken}`,
+            Accept: "application/json",
           },
         });
       } catch (err) {
-        console.error('Logout API call error:', err);
+        console.error("Logout API call error:", err);
       }
     }
 
     setToken(null);
     setUser(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-    router.push('/login');
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    router.push("/login");
   };
 
   const updateUserBalance = (newBalance: number) => {
     if (user) {
       const updatedUser = { ...user, diamond_balance: newBalance };
       setUser(updatedUser);
-      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
     }
   };
 
@@ -296,11 +405,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         forgotPasswordRequest,
         forgotPasswordVerify,
         changePassword,
+        updateProfile,
         logout,
         refreshUser,
         updateUserBalance,
-      }}
-    >
+      }}>
       {children}
     </AuthContext.Provider>
   );
@@ -309,7 +418,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

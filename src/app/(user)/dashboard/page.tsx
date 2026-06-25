@@ -30,7 +30,14 @@ interface Series {
 }
 
 function DashboardContent() {
-  const { user, token, isAuthenticated, refreshUser, changePassword } = useAuth();
+  const {
+    user,
+    token,
+    isAuthenticated,
+    refreshUser,
+    changePassword,
+    updateProfile,
+  } = useAuth();
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -59,17 +66,26 @@ function DashboardContent() {
   const [captchaVal2, setCaptchaVal2] = useState<number>(0);
   const [captchaAnswer, setCaptchaAnswer] = useState<string>("");
   const [submittingReport, setSubmittingReport] = useState<boolean>(false);
-  
+
   // Avatar upload state
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Change password state
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [cpLoading, setCpLoading] = useState(false);
   const [cpError, setCpError] = useState<string | null>(null);
   const [cpSuccess, setCpSuccess] = useState<string | null>(null);
+  // Edit profile state
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editInstagram, setEditInstagram] = useState<string>("");
+  const [editTelegram, setEditTelegram] = useState<string>("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState<string | null>(null);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +104,52 @@ function DashboardContent() {
       setNewPassword("");
     } else {
       setCpError(res.message || "Xatolik yuz berdi.");
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      setEditName(user.name || "");
+      setEditEmail(user.email || "");
+      // Some users may have social links on their profile
+      // backend may provide them under instagram_url / telegram_url
+      // default to empty string if missing
+      // @ts-ignore
+      setEditInstagram(user.instagram_url || "");
+      // @ts-ignore
+      setEditTelegram(user.telegram_url || "");
+    }
+  }, [user]);
+
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError(null);
+    setEditSuccess(null);
+    if (!editName || editName.length < 2) {
+      setEditError("Ism kamida 2 ta belgidan iborat bo'lishi kerak.");
+      return;
+    }
+    setEditLoading(true);
+    try {
+      const result = await updateProfile?.({
+        name: editName,
+        email: editEmail,
+        instagram_url: editInstagram || null,
+        telegram_url: editTelegram || null,
+      });
+
+      if (result && result.success) {
+        setEditSuccess("Profil muvaffaqiyatli saqlandi.");
+        setEditingProfile(false);
+        await refreshUser();
+      } else {
+        setEditError(result?.message || "Xatolik yuz berdi.");
+      }
+    } catch (err) {
+      console.error(err);
+      setEditError("Internet aloqasini tekshiring.");
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -329,26 +391,29 @@ function DashboardContent() {
           <div className="glass-card p-6 rounded-2xl border border-white/5 text-center space-y-4">
             <div className="relative mx-auto w-24 h-24 rounded-full border-2 border-violet-500/20 flex items-center justify-center text-slate-400 group overflow-hidden">
               {user.avatar_url ? (
-                <img src={`${API_URL.replace(/\/api$/, '')}/storage/${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
+                <img
+                  src={`${API_URL.replace(/\/api$/, "")}/storage/${user.avatar_url}`}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-slate-800 flex items-center justify-center">
                   <UserRound className="w-10 h-10" />
                 </div>
               )}
-              
-              <div 
+
+              <div
                 className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
+                onClick={() => fileInputRef.current?.click()}>
                 <span className="text-xs text-white font-medium">
                   {uploadingAvatar ? "Yuklanmoqda..." : "O'zgartirish"}
                 </span>
               </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleAvatarChange} 
-                className="hidden" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                className="hidden"
                 accept="image/jpeg,image/png,image/webp"
               />
             </div>
@@ -414,12 +479,22 @@ function DashboardContent() {
               <span>Parolni o'zgartirish</span>
             </div>
 
-            {cpError && <div className="text-[11px] text-red-400 bg-red-500/5 p-2 rounded-lg border border-red-500/10">{cpError}</div>}
-            {cpSuccess && <div className="text-[11px] text-emerald-400 bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/10">{cpSuccess}</div>}
+            {cpError && (
+              <div className="text-[11px] text-red-400 bg-red-500/5 p-2 rounded-lg border border-red-500/10">
+                {cpError}
+              </div>
+            )}
+            {cpSuccess && (
+              <div className="text-[11px] text-emerald-400 bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/10">
+                {cpSuccess}
+              </div>
+            )}
 
             <form onSubmit={handleChangePassword} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Joriy parol</label>
+                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  Joriy parol
+                </label>
                 <input
                   type="password"
                   value={currentPassword}
@@ -429,7 +504,9 @@ function DashboardContent() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Yangi parol</label>
+                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  Yangi parol
+                </label>
                 <input
                   type="password"
                   value={newPassword}
@@ -441,11 +518,108 @@ function DashboardContent() {
               <button
                 type="submit"
                 disabled={cpLoading}
-                className="w-full bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
-              >
+                className="w-full bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer">
                 {cpLoading ? "Yuklanmoqda..." : "Saqlash"}
               </button>
             </form>
+          </div>
+
+          {/* Edit Profile Panel */}
+          <div className="glass-card p-5 rounded-2xl border border-white/5 space-y-4">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-2 text-slate-200 font-bold text-sm">
+              <Settings className="w-4.5 h-4.5 text-violet-400" />
+              <span>Profilni tahrirlash</span>
+            </div>
+
+            {editError && (
+              <div className="text-[11px] text-red-400 bg-red-500/5 p-2 rounded-lg border border-red-500/10">
+                {editError}
+              </div>
+            )}
+            {editSuccess && (
+              <div className="text-[11px] text-emerald-400 bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/10">
+                {editSuccess}
+              </div>
+            )}
+
+            {!editingProfile ? (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-200">
+                  {user?.name}
+                </p>
+                <p className="text-xs text-slate-400">{user?.email}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditingProfile(true)}
+                    className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/5 rounded-lg text-xs font-bold">
+                    Tahrirlash
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleProfileSave} className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Ism
+                  </label>
+                  <input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Email
+                  </label>
+                  <input
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Instagram URL
+                  </label>
+                  <input
+                    value={editInstagram}
+                    onChange={(e) => setEditInstagram(e.target.value)}
+                    placeholder="https://instagram.com/user"
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    Telegram URL
+                  </label>
+                  <input
+                    value={editTelegram}
+                    onChange={(e) => setEditTelegram(e.target.value)}
+                    placeholder="https://t.me/user"
+                    className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={editLoading}
+                    className="px-4 py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold">
+                    {editLoading ? "Yuklanmoqda..." : "Saqlash"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingProfile(false);
+                      setEditError(null);
+                    }}
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/5 rounded-xl text-xs font-bold">
+                    Bekor qilish
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
 
