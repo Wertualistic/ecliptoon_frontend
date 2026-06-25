@@ -21,14 +21,19 @@ interface Stats {
 }
 
 export default function AdminDashboardPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { t } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // Only admins can access the stats endpoint
+    if (!token || !user || user.role !== 'admin') {
+      setLoading(false);
+      return;
+    }
+
     const fetchStats = async () => {
-      if (!token) return;
       try {
         const res = await fetch(`${API_URL}/admin/stats`, {
           headers: {
@@ -47,7 +52,10 @@ export default function AdminDashboardPage() {
     };
 
     fetchStats();
-  }, [token]);
+  }, [token, user]);
+
+  // Non-admin users are redirected by the layout; render nothing while redirect happens
+  if (!user || user.role !== 'admin') return null;
 
   if (loading) {
     return (
