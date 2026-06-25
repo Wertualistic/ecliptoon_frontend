@@ -16,11 +16,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       
       const title = `${series.title} o'zbek tilida o'qish - ecliptoon`;
       const description = series.description || `ecliptoon orqali ${series.title} manhwasini o'zbek tilida sifatli tarjimada o'qing.`;
-      const coverImage = series.cover_image ? `${apiUrl.replace('/api', '')}/storage/${series.cover_image}` : null;
+      
+      // Clean up dynamic image URL prefix to prevent double-dot or malformed hostnames
+      let cleanApiUrl = apiUrl.replace(/\/api$/, '');
+      if (cleanApiUrl.includes('//.')) {
+        cleanApiUrl = cleanApiUrl.replace('//.', '//www.');
+      }
+      const coverImage = series.cover_image ? `${cleanApiUrl}/storage/${series.cover_image}` : null;
+
+      const keywords = [
+        `${series.title} o'zbekcha manhwa`,
+        `${series.title} o'zbekcha komiks`,
+        `${series.title} o'zbek tilida`,
+        `${series.title} tarjimasi`,
+        `${series.title} manga`,
+        'o\'zbekcha manhwa',
+        'o\'zbekcha komiks',
+        'tarjima manhwa'
+      ];
 
       return {
         title,
         description,
+        keywords,
         openGraph: {
           title,
           description,

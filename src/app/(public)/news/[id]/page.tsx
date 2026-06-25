@@ -67,7 +67,7 @@ export default function NewsDetailPage() {
         {news.image_url && (
           <div className="w-full rounded-xl overflow-hidden mb-8 max-h-[500px]">
             <img 
-              src={`${API_URL.replace('/api', '')}/storage/${news.image_url}`} 
+              src={`${API_URL.replace(/\/api$/, '')}/storage/${news.image_url}`} 
               alt={news.title}
               className="w-full h-full object-cover"
             />

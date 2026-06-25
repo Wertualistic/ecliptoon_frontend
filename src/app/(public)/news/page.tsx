@@ -53,7 +53,7 @@ export default function NewsPage() {
                 {news.image_url && (
                   <div className="md:w-64 h-48 md:h-auto shrink-0 overflow-hidden">
                     <img 
-                      src={`${API_URL.replace('/api', '')}/storage/${news.image_url}`} 
+                      src={`${API_URL.replace(/\/api$/, '')}/storage/${news.image_url}`} 
                       alt={news.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

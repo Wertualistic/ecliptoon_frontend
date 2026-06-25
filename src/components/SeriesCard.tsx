@@ -16,6 +16,7 @@ export interface Series {
   status: 'ongoing' | 'completed' | 'paused' | 'dropped';
   is_mature: boolean;
   is_pinned: boolean;
+  is_slider?: boolean;
   views_count: number;
 }
 
@@ -27,7 +28,8 @@ interface SeriesCardProps {
 export function getImageUrl(path: string | null): string {
   if (!path) return 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&q=80'; // fallback manga cover
   if (path.startsWith('http')) return path;
-  return `http://localhost:8000/storage/${path}`;
+  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'https://api.ecliptoon.uz';
+  return `${base}/storage/${path}`;
 }
 
 export function SeriesCard({ series, hideMatureOverride = false }: SeriesCardProps) {

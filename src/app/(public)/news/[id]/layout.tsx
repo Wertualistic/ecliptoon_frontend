@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       
       const title = `${news.title} - ecliptoon Yangiliklar`;
       const description = news.content ? news.content.substring(0, 160) : 'ecliptoon platformasidagi eng so\'nggi yangiliklar.';
-      const imageUrl = news.image_url ? `${apiUrl.replace('/api', '')}/storage/${news.image_url}` : null;
+      const imageUrl = news.image_url ? `${apiUrl.replace(/\/api$/, '')}/storage/${news.image_url}` : null;
 
       return {
         title,
