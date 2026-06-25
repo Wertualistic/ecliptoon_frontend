@@ -42,10 +42,15 @@ interface Series {
 }
 
 export default function AdminSeriesPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { t } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState<'series' | 'chapters' | 'genres'>('series');
+  const isTranslator = user?.role === 'translator';
+
+  // Translators go straight to chapters tab
+  const [activeTab, setActiveTab] = useState<'series' | 'chapters' | 'genres'>(
+    isTranslator ? 'chapters' : 'series'
+  );
   
   // Data lists
   const [seriesList, setSeriesList] = useState<Series[]>([]);
@@ -455,16 +460,18 @@ export default function AdminSeriesPage() {
           </p>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — translators only see Chapters tab */}
         <div className="flex bg-slate-900 border border-white/5 rounded-xl p-1 text-xs">
-          <button
-            onClick={() => { setActiveTab('series'); setError(null); }}
-            className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-              activeTab === 'series' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Seriallar
-          </button>
+          {!isTranslator && (
+            <button
+              onClick={() => { setActiveTab('series'); setError(null); }}
+              className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                activeTab === 'series' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Seriallar
+            </button>
+          )}
           <button
             onClick={() => { setActiveTab('chapters'); setError(null); }}
             className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
@@ -473,14 +480,16 @@ export default function AdminSeriesPage() {
           >
             Boblar & Sahifalar
           </button>
-          <button
-            onClick={() => { setActiveTab('genres'); setError(null); }}
-            className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-              activeTab === 'genres' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Janrlar
-          </button>
+          {!isTranslator && (
+            <button
+              onClick={() => { setActiveTab('genres'); setError(null); }}
+              className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                activeTab === 'genres' ? 'bg-violet-600 text-white' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Janrlar
+            </button>
+          )}
         </div>
       </div>
 
@@ -685,13 +694,15 @@ export default function AdminSeriesPage() {
           ) : (
             /* Series list */
             <div className="space-y-4">
-              <button
-                onClick={handleOpenAddSeries}
-                className="flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{t('adminPanel.addSeries')}</span>
-              </button>
+              {!isTranslator && (
+                <button
+                  onClick={handleOpenAddSeries}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{t('adminPanel.addSeries')}</span>
+                </button>
+              )}
 
               <div className="glass-card p-6 rounded-2xl border border-white/5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -712,20 +723,22 @@ export default function AdminSeriesPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <button
-                          onClick={() => handleOpenEditSeries(s)}
-                          className="p-2 bg-slate-900 hover:bg-slate-800 border border-white/5 text-slate-300 hover:text-white rounded-lg cursor-pointer"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSeries(s.id)}
-                          className="p-2 bg-slate-900 hover:bg-slate-850 border border-white/5 text-slate-400 hover:text-red-400 rounded-lg cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      {!isTranslator && (
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <button
+                            onClick={() => handleOpenEditSeries(s)}
+                            className="p-2 bg-slate-900 hover:bg-slate-800 border border-white/5 text-slate-300 hover:text-white rounded-lg cursor-pointer"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSeries(s.id)}
+                            className="p-2 bg-slate-900 hover:bg-slate-850 border border-white/5 text-slate-400 hover:text-red-400 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
