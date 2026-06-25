@@ -92,6 +92,12 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div className="flex justify-end">
+            <Link href="/forgot-password" className="text-xs text-violet-400 hover:text-violet-300 font-semibold">
+              Parolni unutdingizmi?
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -104,6 +110,13 @@ export default function LoginPage() {
               </>
             )}
           </button>
+
+          <Link
+            href="/forgot-password"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold rounded-xl text-sm border border-white/5 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] text-center"
+          >
+            Parolni tiklash
+          </Link>
         </form>
 
         <div className="border-t border-white/5 pt-4 text-center">

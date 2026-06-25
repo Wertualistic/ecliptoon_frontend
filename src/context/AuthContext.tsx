@@ -23,6 +23,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   registerVerifyCode: (email: string, code: string) => Promise<{ success: boolean; message?: string }>;
   register: (name: string, email: string, password: string, ref?: string | null) => Promise<{ success: boolean; message?: string }>;
+  forgotPasswordRequest: (email: string) => Promise<{ success: boolean; message?: string }>;
+  forgotPasswordVerify: (email: string, code: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  changePassword: (current_password: string, new_password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateUserBalance: (newBalance: number) => void;
@@ -197,6 +200,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const forgotPasswordRequest = async (email: string) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/forgot-password-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, message: data.message || 'Xatolik yuz berdi' };
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Serverga ulanib bo\'lmadi.' };
+    }
+  };
+
+  const forgotPasswordVerify = async (email: string, code: string, password: string) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/forgot-password-verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email, code, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, message: data.message || 'Tasdiqlash kodi noto\'g\'ri' };
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Serverga ulanib bo\'lmadi.' };
+    }
+  };
+
+  const changePassword = async (current_password: string, new_password: string) => {
+    const currentToken = token || localStorage.getItem('auth_token');
+    try {
+      const res = await fetch(`${API_URL}/auth/user/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${currentToken}`,
+        },
+        body: JSON.stringify({ current_password, new_password }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, message: data.message || 'Joriy parol noto\'g\'ri' };
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'Serverga ulanib bo\'lmadi.' };
+    }
+  };
+
   const logout = async () => {
     const currentToken = token || localStorage.getItem('auth_token');
     if (currentToken) {
@@ -240,6 +293,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         registerVerifyCode,
+        forgotPasswordRequest,
+        forgotPasswordVerify,
+        changePassword,
         logout,
         refreshUser,
         updateUserBalance,

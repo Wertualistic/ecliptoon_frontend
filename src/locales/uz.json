@@ -97,6 +97,7 @@
     "currentBalance": "Sizning balansingiz:",
     "unlockBtn": "Olmos bilan ochish",
     "insufficientDiamonds": "Balansingiz yetarli emas!",
+    "insufficientBalance": "Balans yetarli emas!",
     "buyDiamondsPrompt": "Olmos sotib olish",
     "successUnlock": "Bob muvaffaqiyatli ochildi!",
     "commentAttachImage": "Rasm biriktirish",

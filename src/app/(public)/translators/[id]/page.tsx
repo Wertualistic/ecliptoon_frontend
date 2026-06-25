@@ -100,7 +100,7 @@ export default function TranslatorProfilePage() {
       <div className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 md:p-10 mb-12 flex flex-col md:flex-row items-center gap-8 shadow-xl">
         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-slate-800 border-4 border-violet-500/20 shrink-0">
           {translator.avatar_url ? (
-            <img src={`${API_URL}/storage/${translator.avatar_url}`} alt={translator.name} className="w-full h-full object-cover" />
+            <img src={`${API_URL.replace(/\/api$/, '')}/storage/${translator.avatar_url}`} alt={translator.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-violet-500/10">
               <UserRound className="w-16 h-16 text-violet-400" />

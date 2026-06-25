@@ -154,42 +154,67 @@ export default function AdminLayout({
       {/* 2. Main content wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         {/* Top bar */}
-        <header className="h-16 border-b border-white/5 bg-slate-900/20 px-6 sm:px-8 flex items-center justify-between flex-shrink-0">
-          <div className="md:hidden flex items-center">
+        <header className="h-16 border-b border-white/5 bg-slate-900/20 px-4 sm:px-8 flex items-center justify-between flex-shrink-0">
+          {/* Mobile Navigation (Scrollable horizontally) */}
+          <div className="md:hidden flex items-center overflow-x-auto w-full gap-4 pr-4 pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {user.role === 'admin' && (
-              <Link 
-                href="/admin" 
-                className="font-extrabold text-sm tracking-wider uppercase text-red-400 mr-4"
-              >
+              <Link href="/admin" className="font-extrabold text-sm tracking-wider uppercase text-red-400 flex-shrink-0">
                 Admin
               </Link>
             )}
             {user.role === 'moderator' && (
-              <span className="font-extrabold text-sm tracking-wider uppercase text-violet-400 mr-4">
+              <span className="font-extrabold text-sm tracking-wider uppercase text-violet-400 flex-shrink-0">
                 Moderator
               </span>
             )}
             {user.role === 'translator' && (
-              <span className="font-extrabold text-sm tracking-wider uppercase text-blue-400 mr-4">
+              <span className="font-extrabold text-sm tracking-wider uppercase text-blue-400 flex-shrink-0">
                 Translator
               </span>
             )}
-            {/* Quick links for mobile */}
-            {user.permissions?.includes('topup_requests') && (
-              <Link href="/admin/topup-requests" className="text-xs text-slate-400 font-semibold px-2">Arizalar</Link>
-            )}
-            {user.permissions?.includes('series') && (
-              <Link href="/admin/series" className="text-xs text-slate-400 font-semibold px-2">Kino/Manga</Link>
-            )}
-            <Link href="/" className="text-xs text-slate-400 font-semibold px-2">Chiqish</Link>
+
+            {/* Render all permitted links dynamically */}
+            {[
+              { href: '/admin', label: t('adminPanel.dashboard'), permission: 'dashboard' },
+              { href: '/admin/topup-requests', label: t('adminPanel.pendingRequests'), permission: 'topup_requests' },
+              { href: '/admin/series', label: t('adminPanel.seriesManagement'), permission: 'series' },
+              { href: '/admin/packages', label: t('adminPanel.packagesManagement'), permission: 'packages' },
+              { href: '/admin/users', label: t('adminPanel.usersManagement'), permission: 'users' },
+              { href: '/admin/coupons', label: t('adminPanel.couponManagement'), permission: 'coupons' },
+              { href: '/admin/sponsors', label: t('adminPanel.sponsorManagement'), permission: 'sponsors' },
+              { href: '/admin/books', label: t('adminPanel.booksManagement'), permission: 'books' },
+              { href: '/admin/orders', label: t('adminPanel.ordersManagement'), permission: 'orders' },
+              { href: '/admin/applications', label: 'Arizalar', permission: 'users' },
+              { href: '/admin/news', label: 'Yangiliklar', permission: 'dashboard' },
+              { href: '/admin/permissions', label: 'Rollar', permission: 'permissions' },
+            ].filter((item) => user.permissions?.includes(item.permission)).map((item) => {
+              const isActive = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-xs font-semibold whitespace-nowrap flex-shrink-0 px-2 py-1 rounded-lg ${
+                    isActive ? 'bg-violet-500/20 text-violet-400' : 'text-slate-300'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            <Link href="/" className="text-xs text-red-400 font-bold whitespace-nowrap flex-shrink-0 px-2">
+              Chiqish
+            </Link>
           </div>
 
-          <div className="hidden md:block text-xs text-slate-400">
-            Hush kelibsiz, <span className="font-bold text-slate-200">{user.name}</span> ({user.role})
-          </div>
-
-          <div className="text-xs font-semibold px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 rounded-md">
-            Nazorat rejimi (Admin Mode)
+          {/* Desktop Navigation Info */}
+          <div className="hidden md:flex items-center w-full justify-between">
+            <div className="text-xs text-slate-400">
+              Hush kelibsiz, <span className="font-bold text-slate-200">{user.name}</span> ({user.role})
+            </div>
+            <div className="text-xs font-semibold px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 rounded-md">
+              Nazorat rejimi (Admin Mode)
+            </div>
           </div>
         </header>
 

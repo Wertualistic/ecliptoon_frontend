@@ -1,15 +1,43 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './Providers';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://ecliptoon.uz'),
   title: {
-    default: 'ecliptoon - Manhwa, Manga va Manhualar o\'zbek tilida',
+    default: 'ecliptoon - O\'zbekcha Manhwa, Manga va Komikslar',
     template: '%s | ecliptoon',
   },
-  description: 'ecliptoon - O\'zbekistondagi eng yirik webtoon va manga o\'qish platformasi. Olmoslar yordamida yangi boblarni birinchilardan bo\'lib oching va sevimli asarlaringizni o\'zbek tilida o\'qing.',
-  keywords: ['manhwa o\'zbekcha', 'manga o\'zbek', 'manhua uzbek', 'tarjima manhwa', 'ecliptoon', 'webtoon o\'zbek tilida', 'koreys komikslari', 'o\'zbek tilida manga o\'qish', 'manxva', 'manxua'],
+  description: 'ecliptoon - O\'zbekistondagi eng yirik o\'zbekcha manhwa, manga va komiks o\'qish platformasi. Sevimli asarlaringizni o\'zbek tilida, yuqori sifatda o\'qing.',
+  keywords: [
+    'o\'zbekcha manhwa',
+    'uzbekcha manhwa',
+    'o\'zbekcha komiks',
+    'uzbekcha komiks',
+    'komiks o\'zbekcha',
+    'komiks uzbekcha',
+    'manhwa o\'zbekcha',
+    'manhwa uzbekcha',
+    'manga o\'zbekcha',
+    'manga uzbekcha',
+    'o\'zbekcha manga',
+    'uzbekcha manga',
+    'manga o\'zbek',
+    'manhua uzbek',
+    'tarjima manhwa',
+    'tarjima manga',
+    'ecliptoon',
+    'ecliptoon uz',
+    'webtoon o\'zbek tilida',
+    'webtoon uzbek tilida',
+    'koreys komikslari',
+    'o\'zbek tilida manga o\'qish',
+    'uzbek tilida manga oqish',
+    'manxva',
+    'manxua',
+    'komikslar'
+  ],
   authors: [{ name: 'ecliptoon Team' }],
   robots: {
     index: true,
@@ -47,6 +75,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="uz" className="dark h-full">
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8603051910555547"
+          crossOrigin="anonymous"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: 'window.yaContextCb=window.yaContextCb||[]',
+          }}
+        />
+        <script
+          async
+          src="https://yandex.ru/ads/system/context.js"
+        />
+      </head>
       <body className="bg-slate-950 text-slate-50 min-h-full flex flex-col antialiased">
         <Providers>
           {children}

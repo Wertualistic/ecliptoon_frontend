@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Coins, Compass, AlertCircle
 import Link from 'next/link';
 import { ImageZoomModal } from '@/components/ImageZoomModal';
 import { StrawberryIcon } from '@/components/StrawberryIcon';
+import YandexAd from '@/components/YandexAd';
+import AdSenseAd from '@/components/AdSenseAd';
 
 interface ChapterImage {
   id: number;
@@ -27,6 +29,7 @@ interface ChapterDetails {
   is_locked: boolean;
   published_at: string;
   images?: ChapterImage[];
+  pages?: string[];
   pdf_url?: string;
 }
 
@@ -45,10 +48,33 @@ interface Comment {
   created_at: string;
 }
 
+
+
 interface SequentialError {
   message: string;
   prevChapterId: number | null;
 }
+
+// LazyImage is kept for normal images
+const LazyImage = ({ src, alt }: { src: string; alt: string }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className={`relative w-full ${!loaded ? 'min-h-[60vh] bg-slate-900 animate-pulse flex items-center justify-center border-b border-white/5' : ''}`}>
+      {!loaded && (
+        <div className="absolute text-slate-700 flex flex-col items-center justify-center">
+           <div className="w-8 h-8 border-4 border-slate-800 border-t-violet-500 rounded-full animate-spin"></div>
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-auto block m-0 p-0 transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+    </div>
+  );
+};
 
 export default function ChapterReaderPage() {
   const { slug, chapter: chapterId } = useParams();
@@ -432,26 +458,19 @@ export default function ChapterReaderPage() {
             </div>
           </div>
         ) : (
-          /* Unlocked PDF Reader or stacked image list fallback */
           <div className="w-full select-none">
-            {chapter.pdf_url ? (
-              <div className="w-full aspect-[3/4] sm:h-[85vh] border border-white/10 rounded-2xl overflow-hidden bg-slate-900 shadow-2xl">
-                <iframe
-                  src={`${chapter.pdf_url}#toolbar=0`}
-                  className="w-full h-full border-none"
-                  title={chapter.title || `Chapter ${chapter.chapter_number}`}
-                />
+            {chapter.pages && chapter.pages.length > 0 ? (
+              <div className="webtoon-container flex flex-col gap-0 w-full max-w-full overflow-hidden bg-slate-950">
+                {chapter.pages.map((imgUrl, idx) => (
+                  <LazyImage key={idx} src={imgUrl} alt={`Page ${idx + 1}`} />
+                ))}
               </div>
+            ) : chapter.pdf_url ? (
+              <PdfIframeReader url={chapter.pdf_url} title={chapter.title || `Chapter ${chapter.chapter_number}`} />
             ) : chapter.images && chapter.images.length > 0 ? (
-              <div className="webtoon-container flex flex-col gap-0">
+              <div className="webtoon-container flex flex-col gap-0 w-full max-w-full overflow-hidden bg-slate-950">
                 {chapter.images.map((img) => (
-                  <img
-                    key={img.id}
-                    src={img.image_url}
-                    alt={`Page ${img.order}`}
-                    loading="lazy"
-                    className="w-full"
-                  />
+                  <LazyImage key={img.id} src={img.image_url} alt={`Page ${img.order}`} />
                 ))}
               </div>
             ) : (
@@ -462,6 +481,13 @@ export default function ChapterReaderPage() {
           </div>
         )}
       </div>
+
+      {/* Yandex RTB Ad Unit */}
+      {!chapter.is_locked && (
+        <div className="w-full max-w-xl px-4">
+          <YandexAd blockId="R-A-19493146-1" renderTo="yandex_rtb_R-A-19493146-1" />
+        </div>
+      )}
 
       {/* 3. Bottom Navigation bar */}
       {!chapter.is_locked && (
@@ -508,6 +534,13 @@ export default function ChapterReaderPage() {
               <ChevronRight className="w-4 h-4" />
             </button>
           )}
+        </div>
+      )}
+
+      {/* Google AdSense Ad Unit */}
+      {!chapter.is_locked && (
+        <div className="w-full max-w-xl px-4 mt-8">
+          <AdSenseAd slot="3484743574" />
         </div>
       )}
 
@@ -670,3 +703,26 @@ export default function ChapterReaderPage() {
     </div>
   );
 }
+
+// Added Component to handle Iframe loading state
+const PdfIframeReader = ({ url, title }: { url: string; title: string }) => {
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <div className="relative w-full aspect-[3/4] sm:h-[85vh] border border-white/10 rounded-2xl overflow-hidden bg-slate-900 shadow-2xl">
+      {loading && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900">
+          <div className="w-12 h-12 border-4 border-slate-700 border-t-violet-500 rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-400 font-medium animate-pulse">PDF hujjat yuklanmoqda...</p>
+          <p className="text-slate-500 text-sm mt-2 text-center max-w-xs">Iltimos kuting, katta fayllar biroz vaqt olishi mumkin.</p>
+        </div>
+      )}
+      <iframe
+        src={`${url}#toolbar=0`}
+        className="w-full h-full border-none relative z-20"
+        title={title}
+        onLoad={() => setLoading(false)}
+      />
+    </div>
+  );
+};

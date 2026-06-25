@@ -142,7 +142,7 @@ export function Navbar() {
                 >
                   {user.avatar_url ? (
                     <img 
-                      src={`${API_URL.replace('/api', '')}/storage/${user.avatar_url}`} 
+                      src={`${API_URL.replace(/\/api$/, '')}/storage/${user.avatar_url}`} 
                       alt="Profile" 
                       className="w-6 h-6 rounded-full object-cover"
                     />
@@ -314,7 +314,7 @@ export function Navbar() {
               >
                 {user.avatar_url ? (
                   <img 
-                    src={`${API_URL.replace('/api', '')}/storage/${user.avatar_url}`} 
+                    src={`${API_URL.replace(/\/api$/, '')}/storage/${user.avatar_url}`} 
                     alt="Profile" 
                     className="w-5 h-5 rounded-full object-cover"
                   />

@@ -36,6 +36,7 @@ interface Series {
   status: string;
   is_mature: boolean;
   is_pinned: boolean;
+  is_slider: boolean;
   genres: Genre[];
   sponsors?: Sponsor[];
 }
@@ -68,6 +69,7 @@ export default function AdminSeriesPage() {
   const [sStatus, setSStatus] = useState<string>('ongoing');
   const [sMature, setSMature] = useState<boolean>(false);
   const [sPinned, setSPinned] = useState<boolean>(false);
+  const [sSlider, setSSlider] = useState<boolean>(false);
   const [sCover, setSCover] = useState<File | null>(null);
   const [sGenres, setSGenres] = useState<number[]>([]);
   const [sSponsors, setSSponsors] = useState<number[]>([]);
@@ -82,6 +84,7 @@ export default function AdminSeriesPage() {
   const [chTitle, setChTitle] = useState<string>('');
   const [chFree, setChFree] = useState<boolean>(true);
   const [chPrice, setChPrice] = useState<string>('0');
+  const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
 
   // Images upload states
   const [uploadingChId, setUploadingChId] = useState<number | null>(null);
@@ -146,6 +149,7 @@ export default function AdminSeriesPage() {
     setSStatus('ongoing');
     setSMature(false);
     setSPinned(false);
+    setSSlider(false);
     setSCover(null);
     setSGenres([]);
     setSSponsors([]);
@@ -173,6 +177,7 @@ export default function AdminSeriesPage() {
     setSStatus(series.status);
     setSMature(series.is_mature);
     setSPinned(series.is_pinned);
+    setSSlider(series.is_slider || false);
     setSCover(null);
     setSGenres(series.genres.map(g => g.id));
     setSSponsors(series.sponsors ? series.sponsors.map(sp => sp.id) : []);
@@ -192,6 +197,7 @@ export default function AdminSeriesPage() {
     formData.append('status', sStatus);
     formData.append('is_mature', sMature ? '1' : '0');
     formData.append('is_pinned', sPinned ? '1' : '0');
+    formData.append('is_slider', sSlider ? '1' : '0');
 
     const alts = sAltTitles.split(',').map(t => t.trim()).filter(t => t);
     alts.forEach((alt, i) => {
@@ -271,8 +277,14 @@ export default function AdminSeriesPage() {
     if (!chSelectedSeries || !chNumber) return;
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/admin/series/${chSelectedSeries}/chapters`, {
-        method: 'POST',
+      const url = editingChapter 
+        ? `${API_URL}/admin/chapters/${editingChapter.id}`
+        : `${API_URL}/admin/series/${chSelectedSeries}/chapters`;
+
+      const method = editingChapter ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -290,6 +302,7 @@ export default function AdminSeriesPage() {
 
       if (res.ok) {
         setShowChapterForm(false);
+        setEditingChapter(null);
         setChNumber('');
         setChTitle('');
         setChFree(true);
@@ -301,11 +314,29 @@ export default function AdminSeriesPage() {
           setChaptersList(await chRes.json());
         }
       } else {
-        setError(data.errors?.chapter_number?.[0] || data.message || 'Bob qo\'shishda xatolik.');
+        setError(data.errors?.chapter_number?.[0] || data.message || 'Bob saqlashda xatolik.');
       }
     } catch (err) {
       setError('Internet aloqasini tekshiring.');
     }
+  };
+
+  const handleOpenAddChapter = () => {
+    setEditingChapter(null);
+    setChNumber('');
+    setChTitle('');
+    setChFree(true);
+    setChPrice('0');
+    setShowChapterForm(true);
+  };
+
+  const handleOpenEditChapter = (ch: Chapter) => {
+    setEditingChapter(ch);
+    setChNumber(String(ch.chapter_number));
+    setChTitle(ch.title || '');
+    setChFree(ch.is_free);
+    setChPrice(String(ch.price_in_diamonds));
+    setShowChapterForm(true);
   };
 
   const handleUploadImages = async (e: React.FormEvent) => {
@@ -571,6 +602,14 @@ export default function AdminSeriesPage() {
                       />
                       <span>Qadash (Pin)</span>
                     </label>
+                    <label className="flex items-center gap-2 font-semibold text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={sSlider}
+                        onChange={(e) => setSSlider(e.target.checked)}
+                      />
+                      <span>Slayder (Slider)</span>
+                    </label>
                   </div>
                 </div>
 
@@ -727,7 +766,7 @@ export default function AdminSeriesPage() {
             {chSelectedSeries ? (
               <div className="space-y-2.5 pt-2">
                 <button
-                  onClick={() => setShowChapterForm(true)}
+                  onClick={handleOpenAddChapter}
                   className="flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-bold cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -759,6 +798,13 @@ export default function AdminSeriesPage() {
                         </button>
                         
                         <button
+                          onClick={() => handleOpenEditChapter(ch)}
+                          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg cursor-pointer"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
                           onClick={() => handleDeleteChapter(ch.id)}
                           className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-900 rounded-lg cursor-pointer"
                         >
@@ -783,7 +829,7 @@ export default function AdminSeriesPage() {
               <div className="glass-card p-5 rounded-2xl border border-violet-500/20 bg-violet-500/5 space-y-4">
                 <div className="flex justify-between items-start border-b border-violet-500/10 pb-2">
                   <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                    {t('adminPanel.addChapter')}
+                    {editingChapter ? 'Bobni tahrirlash' : t('adminPanel.addChapter')}
                   </h3>
                   <button onClick={() => setShowChapterForm(false)} className="text-xs text-slate-400 hover:text-white">X</button>
                 </div>

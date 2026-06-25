@@ -101,7 +101,7 @@ export default function AdminApplicationsPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-800 overflow-hidden">
                           {app.user?.avatar_url ? (
-                            <img src={`${API_URL}/storage/${app.user.avatar_url}`} alt="avatar" className="w-full h-full object-cover" />
+                            <img src={`${API_URL.replace(/\/api$/, '')}/storage/${app.user.avatar_url}`} alt="avatar" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full bg-slate-700"></div>
                           )}

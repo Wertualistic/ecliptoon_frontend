@@ -9,6 +9,8 @@ import { getImageUrl } from '@/components/SeriesCard';
 import { MatureGateModal } from '@/components/MatureGateModal';
 import { Star, MessageSquare, ListVideo, Eye, Heart, Info, Clock, Bookmark, BookmarkCheck, ArrowLeft, ArrowRight, X, UserRound, Calendar, Lock, BookOpen, AlertCircle } from 'lucide-react';
 import { StrawberryIcon } from '@/components/StrawberryIcon';
+import YandexAd from '@/components/YandexAd';
+import AdSenseAd from '@/components/AdSenseAd';
 
 interface Chapter {
   id: number;
@@ -452,6 +454,9 @@ export default function SeriesDetailPage() {
         </div>
       )}
 
+      {/* Yandex RTB Ad Unit */}
+      <YandexAd blockId="R-A-19493146-1" renderTo="yandex_rtb_R-A-19493146-1_series" />
+
       {/* Chapters Section */}
       <div className="space-y-4">
         <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2 border-b border-white/5 pb-2">
@@ -507,6 +512,9 @@ export default function SeriesDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Google AdSense Ad Unit */}
+      <AdSenseAd slot="3484743574" />
 
     </div>
   );

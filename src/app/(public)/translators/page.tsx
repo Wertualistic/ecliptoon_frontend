@@ -67,7 +67,7 @@ export default function TranslatorsDirectoryPage() {
                 <div className="relative w-24 h-24 mb-4">
                   {translator.avatar_url ? (
                     <img 
-                      src={`${API_URL}/storage/${translator.avatar_url}`} 
+                      src={`${API_URL.replace(/\/api$/, '')}/storage/${translator.avatar_url}`} 
                       alt={translator.name}
                       className="w-full h-full object-cover rounded-full ring-4 ring-slate-800 group-hover:ring-pink-500/50 transition-all shadow-xl"
                     />

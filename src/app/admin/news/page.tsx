@@ -224,7 +224,7 @@ export default function AdminNewsPage() {
             <div key={item.id} className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden flex flex-col hover:border-white/10 transition-colors">
               {item.image_url ? (
                 <div className="h-48 overflow-hidden bg-slate-800">
-                  <img src={`${API_URL.replace('/api', '')}/storage/${item.image_url}`} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={`${API_URL.replace(/\/api$/, '')}/storage/${item.image_url}`} alt={item.title} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div className="h-48 bg-slate-800/50 flex items-center justify-center">

@@ -7,6 +7,8 @@ import { SeriesCard, Series, getImageUrl } from '@/components/SeriesCard';
 import { API_URL } from '@/context/AuthContext';
 import { TrendingUp, Sparkles, CheckCircle2, ChevronRight, Eye, ChevronLeft, Handshake } from 'lucide-react';
 import { StrawberryIcon } from '@/components/StrawberryIcon';
+import YandexAd from '@/components/YandexAd';
+import AdSenseAd from '@/components/AdSenseAd';
 
 interface LatestChapter {
   id: number;
@@ -37,20 +39,20 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [trendingRes, latestRes, completedRes, sponsorsRes] = await Promise.all([
+        const [trendingRes, latestRes, completedRes, sponsorsRes, sliderRes] = await Promise.all([
           fetch(`${API_URL}/trending`),
           fetch(`${API_URL}/latest-updates`),
           fetch(`${API_URL}/completed`),
-          fetch(`${API_URL}/sponsors`)
+          fetch(`${API_URL}/sponsors`),
+          fetch(`${API_URL}/slider`)
         ]);
 
         if (trendingRes.ok) {
           const trendingData = await trendingRes.json();
           setTrending(trendingData);
-          if (trendingData.length > 0) {
-            // Take up to 4 top items for the banner slider
-            setFeaturedList(trendingData.slice(0, 4));
-          }
+        }
+        if (sliderRes.ok) {
+          setFeaturedList(await sliderRes.json());
         }
         if (latestRes.ok) {
           setLatest(await latestRes.json());
@@ -146,7 +148,8 @@ export default function HomePage() {
                 {/* Dark Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-transparent z-10" />
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 sm:py-20 relative z-20">
+                {/* Desktop Version */}
+                <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 sm:py-20 relative z-20">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                     {/* Cover Art */}
                     <div className="hidden md:block max-w-[280px] aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-violet-500/5 group/cover">
@@ -188,6 +191,70 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Mobile Version (responsive slider card matching screenshot) */}
+                <div className="block md:hidden px-6 pt-4 pb-8 relative z-20">
+                  <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                    {/* Cover image as background of card */}
+                    <img
+                      src={getImageUrl(featured.cover_image)}
+                      alt={featured.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+
+                    {/* Dark gradient for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent z-10" />
+
+                    {/* Content overlay */}
+                    <div className="absolute inset-0 z-20 p-5 flex flex-col justify-between">
+                      {/* Top tags */}
+                      <div className="flex gap-2">
+                        <span className="px-2.5 py-1 bg-violet-600/90 text-white text-[10px] font-extrabold rounded-md uppercase tracking-wider">
+                          New
+                        </span>
+                        <span className="px-2.5 py-1 bg-slate-950/80 backdrop-blur-sm text-slate-300 text-[10px] font-extrabold rounded-md uppercase tracking-wider">
+                          {featured.type.toUpperCase()}
+                        </span>
+                      </div>
+
+                      {/* Bottom Info Overlay */}
+                      <div className="space-y-1.5">
+                        <Link href={`/series/${featured.slug}`}>
+                          <h2 className="text-xl font-bold text-white tracking-tight leading-tight hover:text-violet-400 transition-colors">
+                            {featured.title}
+                          </h2>
+                        </Link>
+
+                        {/* Status Label matching "ONGOING" status with green dot */}
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${featured.status === 'ongoing' ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'}`} />
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">
+                            {featured.status === 'ongoing' ? 'ONGOING' : 'COMPLETED'}
+                          </span>
+                        </div>
+
+                        {/* Description snippet */}
+                        <p className="text-slate-300 text-[11px] line-clamp-2 leading-relaxed">
+                          {featured.description || 'Ushbu asar haqida batafsil ma\'lumot hali kiritilmagan.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Mobile Left & Right navigation arrows overlay inside the card */}
+                    <button
+                      onClick={handlePrevSlide}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 bg-slate-950/65 border border-white/10 text-slate-300 rounded-full cursor-pointer hover:bg-slate-900 active:scale-95 transition-all"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleNextSlide}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 bg-slate-950/65 border border-white/10 text-slate-300 rounded-full cursor-pointer hover:bg-slate-900 active:scale-95 transition-all"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -197,13 +264,13 @@ export default function HomePage() {
             <>
               <button
                 onClick={handlePrevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-slate-950/40 border border-white/5 text-slate-400 hover:text-white rounded-full hover:bg-slate-900 transition-colors opacity-0 group-hover:opacity-100 duration-300 cursor-pointer"
+                className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-slate-950/40 border border-white/5 text-slate-400 hover:text-white rounded-full hover:bg-slate-900 transition-colors opacity-0 group-hover:opacity-100 duration-300 cursor-pointer"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={handleNextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-slate-950/40 border border-white/5 text-slate-400 hover:text-white rounded-full hover:bg-slate-900 transition-colors opacity-0 group-hover:opacity-100 duration-300 cursor-pointer"
+                className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-slate-950/40 border border-white/5 text-slate-400 hover:text-white rounded-full hover:bg-slate-900 transition-colors opacity-0 group-hover:opacity-100 duration-300 cursor-pointer"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -212,7 +279,7 @@ export default function HomePage() {
 
           {/* Slider dot indicators */}
           {featuredList.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+            <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 z-30 gap-2">
               {featuredList.map((_, index) => (
                 <button
                   key={index}
@@ -292,6 +359,9 @@ export default function HomePage() {
             </div>
           </section>
         )}
+
+        {/* Yandex RTB Ad Unit */}
+        <YandexAd blockId="R-A-19493146-1" renderTo="yandex_rtb_R-A-19493146-1_home" />
 
         {/* 3. Latest Chapters Section */}
         {latest.length > 0 && (
@@ -390,6 +460,9 @@ export default function HomePage() {
             </div>
           </section>
         )}
+
+        {/* Google AdSense Ad Unit */}
+        <AdSenseAd slot="3484743574" />
 
       </div>
     </div>

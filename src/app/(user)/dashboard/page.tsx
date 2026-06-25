@@ -30,7 +30,7 @@ interface Series {
 }
 
 function DashboardContent() {
-  const { user, token, isAuthenticated, refreshUser } = useAuth();
+  const { user, token, isAuthenticated, refreshUser, changePassword } = useAuth();
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -63,6 +63,33 @@ function DashboardContent() {
   // Avatar upload state
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [cpLoading, setCpLoading] = useState(false);
+  const [cpError, setCpError] = useState<string | null>(null);
+  const [cpSuccess, setCpSuccess] = useState<string | null>(null);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCpError(null);
+    setCpSuccess(null);
+    if (!currentPassword || newPassword.length < 6) {
+      setCpError("Yangi parol kamida 6 ta belgi bo'lishi kerak.");
+      return;
+    }
+    setCpLoading(true);
+    const res = await changePassword(currentPassword, newPassword);
+    setCpLoading(false);
+    if (res.success) {
+      setCpSuccess("Parolingiz muvaffaqiyatli o'zgartirildi!");
+      setCurrentPassword("");
+      setNewPassword("");
+    } else {
+      setCpError(res.message || "Xatolik yuz berdi.");
+    }
+  };
 
   // Generate new math captcha
   const generateCaptcha = () => {
@@ -302,7 +329,7 @@ function DashboardContent() {
           <div className="glass-card p-6 rounded-2xl border border-white/5 text-center space-y-4">
             <div className="relative mx-auto w-24 h-24 rounded-full border-2 border-violet-500/20 flex items-center justify-center text-slate-400 group overflow-hidden">
               {user.avatar_url ? (
-                <img src={`${API_URL}/storage/${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={`${API_URL.replace(/\/api$/, '')}/storage/${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-slate-800 flex items-center justify-center">
                   <UserRound className="w-10 h-10" />
@@ -378,6 +405,47 @@ function DashboardContent() {
                 />
               </button>
             </div>
+          </div>
+
+          {/* Change Password Panel */}
+          <div className="glass-card p-5 rounded-2xl border border-white/5 space-y-4">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-2 text-slate-200 font-bold text-sm">
+              <Settings className="w-4.5 h-4.5 text-violet-400" />
+              <span>Parolni o'zgartirish</span>
+            </div>
+
+            {cpError && <div className="text-[11px] text-red-400 bg-red-500/5 p-2 rounded-lg border border-red-500/10">{cpError}</div>}
+            {cpSuccess && <div className="text-[11px] text-emerald-400 bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/10">{cpSuccess}</div>}
+
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Joriy parol</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Yangi parol</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none focus:border-violet-500 transition-colors"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={cpLoading}
+                className="w-full bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
+              >
+                {cpLoading ? "Yuklanmoqda..." : "Saqlash"}
+              </button>
+            </form>
           </div>
         </div>
 
