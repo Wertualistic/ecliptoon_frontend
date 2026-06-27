@@ -162,7 +162,7 @@ export default function NovelReaderPage() {
       const trimmed = para.trim();
       if (!trimmed) return <br key={i} />;
       return (
-        <p key={i} className="mb-6 indent-4 leading-relaxed tracking-wide text-justify">
+        <p key={i} className="mb-6 indent-4 leading-relaxed tracking-wide text-justify break-words [overflow-wrap:anywhere]">
           {trimmed}
         </p>
       );
@@ -301,7 +301,7 @@ export default function NovelReaderPage() {
 
       {/* Main Text Content Area */}
       <div
-        className={`p-8 sm:p-12 rounded-2xl shadow-xl transition-all duration-300 ${getThemeClass()} ${getFontFamilyClass()}`}
+        className={`p-8 sm:p-12 rounded-2xl shadow-xl transition-all duration-300 overflow-hidden break-words ${getThemeClass()} ${getFontFamilyClass()}`}
         style={{ fontSize: `${fontSize}px` }}
       >
         <div className="max-w-2xl mx-auto space-y-1">
@@ -314,7 +314,7 @@ export default function NovelReaderPage() {
           </div>
 
           {/* Paragraphs body */}
-          <div className="text-justify font-normal leading-loose">
+          <div className="text-justify font-normal leading-loose break-words [overflow-wrap:anywhere]">
             {renderTextContent()}
           </div>
         </div>

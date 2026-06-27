@@ -102,13 +102,16 @@ export function SeriesCard({ series, hideMatureOverride = false }: SeriesCardPro
         {/* Type badge */}
         {(() => {
           const typeStr = series.type || 'novel';
+          const key = `catalog.type${typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}`;
+          const translated = t(key);
+          const displayText = translated.startsWith('catalog.') ? typeStr.toUpperCase() : translated;
           return (
             <span
               className={`absolute bottom-2.5 left-2.5 bg-gradient-to-br px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase border ${getTypeColor(
                 typeStr
               )}`}
             >
-              {t(`catalog.type${typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}`)}
+              {displayText}
             </span>
           );
         })()}

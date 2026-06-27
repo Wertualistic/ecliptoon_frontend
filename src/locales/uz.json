@@ -69,7 +69,8 @@
     "statusDropped": "Tashlab ketilgan",
     "typeManhwa": "Manhwa",
     "typeManga": "Manga",
-    "typeManhua": "Manhua"
+    "typeManhua": "Manhua",
+    "typeNovel": "Novel"
   },
   "series": {
     "alternativeTitles": "Muqobil nomlari",
