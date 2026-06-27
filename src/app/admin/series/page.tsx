@@ -800,7 +800,7 @@ export default function AdminSeriesPage() {
                               {s.title}
                             </h4>
                             <span className="text-[10px] text-slate-500 uppercase font-semibold">
-                              {s.type} • {s.status}
+                              {s.type || 'manhwa'} • {s.status}
                             </span>
                           </div>
                         </div>

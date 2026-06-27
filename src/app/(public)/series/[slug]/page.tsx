@@ -326,9 +326,17 @@ export default function SeriesDetailPage() {
 
           {/* Meta Tags */}
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 text-xs">
-            <span className="px-2.5 py-1 bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold rounded-md uppercase">
-              {t(`catalog.type${series.type.charAt(0).toUpperCase() + series.type.slice(1)}`)}
-            </span>
+            {(() => {
+              const typeStr = series.type || 'manhwa';
+              const key = `catalog.type${typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}`;
+              const translated = t(key);
+              const displayText = translated.startsWith('catalog.') ? typeStr.toUpperCase() : translated;
+              return (
+                <span className="px-2.5 py-1 bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold rounded-md uppercase">
+                  {displayText}
+                </span>
+              );
+            })()}
             
             <span className="px-2.5 py-1 bg-slate-900 border border-white/5 text-slate-300 font-semibold rounded-md">
               {getStatusText(series.status)}
@@ -336,7 +344,7 @@ export default function SeriesDetailPage() {
 
             <span className="flex items-center gap-1 text-slate-400 bg-slate-900 border border-white/5 px-2.5 py-1 rounded-md">
               <Eye className="w-4 h-4 text-violet-400" />
-              {series.views_count.toLocaleString()}
+              {(series.views_count || 0).toLocaleString()}
             </span>
 
             {/* Rating Stat display */}
@@ -348,7 +356,7 @@ export default function SeriesDetailPage() {
 
           {/* Genres */}
           <div className="flex flex-wrap justify-center md:justify-start gap-1.5 pt-1">
-            {series.genres.map((genre) => (
+            {(series.genres || []).map((genre) => (
               <span
                 key={genre.id}
                 className="text-[11px] bg-slate-900 border border-white/5 text-slate-300 px-2.5 py-1 rounded-full hover:border-violet-500/30 transition-colors"

@@ -288,7 +288,7 @@ export default function AdminDashboardPage() {
                   ))
                 ) : (
                   stats.top_series?.map((item, index) => (
-                    <tr key={item.id} className="border-b border-white/5 text-slate-300">
+                    <tr key={`${item.type || 'series'}-${item.id}`} className="border-b border-white/5 text-slate-300">
                       <td className="py-3.5 pr-4 flex items-center gap-2.5">
                         <span className="w-5 h-5 rounded bg-slate-800 text-[10px] font-extrabold flex items-center justify-center text-slate-400">
                           {index + 1}
@@ -296,10 +296,10 @@ export default function AdminDashboardPage() {
                         <span className="font-bold text-slate-200">{item.title}</span>
                       </td>
                       <td className="py-3.5 px-4 font-semibold uppercase text-violet-400">
-                        {item.type}
+                        {item.type || 'manhwa'}
                       </td>
                       <td className="py-3.5 px-4 text-slate-400 font-bold">
-                        {item.views_count.toLocaleString()}
+                        {(item.views_count || 0).toLocaleString()}
                       </td>
                     </tr>
                   ))
