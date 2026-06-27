@@ -213,7 +213,7 @@ export default function HomePage() {
                           New
                         </span>
                         <span className="px-2.5 py-1 bg-slate-950/80 backdrop-blur-sm text-slate-300 text-[10px] font-extrabold rounded-md uppercase tracking-wider">
-                          {featured.type.toUpperCase()}
+                          {(featured.type || 'novel').toUpperCase()}
                         </span>
                       </div>
 

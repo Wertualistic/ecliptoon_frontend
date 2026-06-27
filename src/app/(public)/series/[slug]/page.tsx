@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
-import { getImageUrl } from '@/components/SeriesCard';
+import { SeriesCard, getImageUrl } from '@/components/SeriesCard';
 import { MatureGateModal } from '@/components/MatureGateModal';
 import { Star, MessageSquare, ListVideo, Eye, Heart, Info, Clock, Bookmark, BookmarkCheck, ArrowLeft, ArrowRight, X, UserRound, Calendar, Lock, BookOpen, AlertCircle } from 'lucide-react';
 import { StrawberryIcon } from '@/components/StrawberryIcon';
@@ -58,6 +58,7 @@ export default function SeriesDetailPage() {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [showAgeGate, setShowAgeGate] = useState<boolean>(false);
+  const [trendingItems, setTrendingItems] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchSeriesDetails = async () => {
@@ -68,6 +69,10 @@ export default function SeriesDetailPage() {
           return;
         }
         const detailsData = await detailsRes.json();
+        if (detailsData.type === 'novel') {
+          router.replace(`/novels/${slug}`);
+          return;
+        }
         setSeries(detailsData);
 
         // Load stats
@@ -88,6 +93,12 @@ export default function SeriesDetailPage() {
         const chaptersRes = await fetch(`${API_URL}/series/${slug}/chapters`);
         if (chaptersRes.ok) {
           setChapters(await chaptersRes.json());
+        }
+
+        // Fetch Trending items for recommendation at bottom
+        const trendingRes = await fetch(`${API_URL}/trending`);
+        if (trendingRes.ok) {
+          setTrendingItems(await trendingRes.json());
         }
 
         // Check bookmark, like, and rating status if logged in
@@ -512,6 +523,22 @@ export default function SeriesDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Trending Manhwas & Novels Section */}
+      {trendingItems.length > 0 && (
+        <div className="space-y-6 pt-8 border-t border-white/5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              🔥 Trenddagilar (Ommabop)
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+            {trendingItems.slice(0, 6).map((item) => (
+              <SeriesCard key={`${item.type || 'series'}-${item.id}`} series={item} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Google AdSense Ad Unit */}
       <AdSenseAd slot="3484743574" />

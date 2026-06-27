@@ -14,12 +14,13 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: "user" | "admin" | "moderator" | "translator";
+  role: "user" | "admin" | "moderator" | "translator" | "novel_creator";
   diamond_balance: number;
   avatar: string | null;
   avatar_url?: string | null;
   is_banned: boolean;
   permissions?: string[];
+  novel_creator_expires_at?: string | null;
 }
 
 interface AuthContextType {

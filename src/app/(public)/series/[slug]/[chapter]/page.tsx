@@ -133,6 +133,10 @@ export default function ChapterReaderPage() {
       }
       
       const data = await res.json();
+      if (data.content_text || data.series_type === 'novel') {
+        router.replace(`/novels/${slug}/${chapterId}`);
+        return;
+      }
       setChapter(data);
 
       // Fetch all chapters in the series to calculate next/prev links

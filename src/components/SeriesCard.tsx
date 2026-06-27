@@ -12,7 +12,7 @@ export interface Series {
   alternative_titles?: string | string[];
   description?: string;
   cover_image: string | null;
-  type: 'manhwa' | 'manga' | 'manhua';
+  type?: string;
   status: 'ongoing' | 'completed' | 'paused' | 'dropped';
   is_mature: boolean;
   is_pinned: boolean;
@@ -68,7 +68,7 @@ export function SeriesCard({ series, hideMatureOverride = false }: SeriesCardPro
 
   return (
     <Link
-      href={`/series/${series.slug}`}
+      href={series.type === 'novel' ? `/novels/${series.slug}` : `/series/${series.slug}`}
       className="group flex flex-col glass-card rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
     >
       {/* Cover container */}
@@ -100,13 +100,18 @@ export function SeriesCard({ series, hideMatureOverride = false }: SeriesCardPro
         )}
 
         {/* Type badge */}
-        <span
-          className={`absolute bottom-2.5 left-2.5 bg-gradient-to-br px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase border ${getTypeColor(
-            series.type
-          )}`}
-        >
-          {t(`catalog.type${series.type.charAt(0).toUpperCase() + series.type.slice(1)}`)}
-        </span>
+        {(() => {
+          const typeStr = series.type || 'novel';
+          return (
+            <span
+              className={`absolute bottom-2.5 left-2.5 bg-gradient-to-br px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase border ${getTypeColor(
+                typeStr
+              )}`}
+            >
+              {t(`catalog.type${typeStr.charAt(0).toUpperCase() + typeStr.slice(1)}`)}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Details info */}

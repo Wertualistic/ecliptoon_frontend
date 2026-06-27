@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslation } from '@/context/I18nContext';
 import { SeriesCard, Series } from '@/components/SeriesCard';
 import { API_URL } from '@/context/AuthContext';
-import { Filter, SlidersHorizontal, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Filter, SlidersHorizontal, ChevronLeft, ChevronRight, RefreshCw, BookOpen } from 'lucide-react';
 
 interface Genre {
   id: number;
@@ -13,15 +13,14 @@ interface Genre {
   slug: string;
 }
 
-function CatalogContent() {
+export default function NovelsCatalogPage() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Load filter values from URL params or set defaults
+  // Filters
   const activeGenre = searchParams.get('genre') || '';
   const activeStatus = searchParams.get('status') || '';
-  const activeType = searchParams.get('type') || '';
   const activeSort = searchParams.get('sort') || 'popularity';
   const activePage = parseInt(searchParams.get('page') || '1');
   const activeSearch = searchParams.get('search') || '';
@@ -43,15 +42,15 @@ function CatalogContent() {
       .catch(err => console.error(err));
   }, []);
 
-  // Fetch Series based on URL params
+  // Fetch Novels
   useEffect(() => {
-    const fetchSeries = async () => {
+    const fetchNovels = async () => {
       setLoading(true);
       try {
         const queryParams = new URLSearchParams();
+        queryParams.set('type', 'novel'); // Strict novel type check!
         if (activeGenre) queryParams.set('genre', activeGenre);
         if (activeStatus) queryParams.set('status', activeStatus);
-        if (activeType) queryParams.set('type', activeType);
         if (activeSort) queryParams.set('sort', activeSort);
         if (activeSearch) queryParams.set('search', activeSearch);
         queryParams.set('page', String(activePage));
@@ -67,35 +66,34 @@ function CatalogContent() {
           });
         }
       } catch (err) {
-        console.error('Error fetching catalog:', err);
+        console.error('Error fetching novels:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSeries();
-  }, [activeGenre, activeStatus, activeType, activeSort, activePage, activeSearch]);
+    fetchNovels();
+  }, [activeGenre, activeStatus, activeSort, activePage, activeSearch]);
 
-  // Handler to update URL params
   const updateFilters = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('page', '1'); // Reset to page 1 on filter change
+    params.set('page', '1');
     if (value) {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-    router.push(`/catalog?${params.toString()}`);
+    router.push(`/novels?${params.toString()}`);
   };
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));
-    router.push(`/catalog?${params.toString()}`);
+    router.push(`/novels?${params.toString()}`);
   };
 
   const clearFilters = () => {
-    router.push('/catalog');
+    router.push('/novels');
   };
 
   return (
@@ -104,19 +102,18 @@ function CatalogContent() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-100 flex items-center gap-2">
-            <SlidersHorizontal className="w-7 h-7 text-violet-400" />
-            {t('common.catalog')}
+            <BookOpen className="w-7 h-7 text-violet-400" />
+            Uzbekcha Novellalar
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            {pagination.total} ta serial topildi
+            {pagination.total} ta matnli novel topildi
           </p>
         </div>
         
-        {/* Clear filters button */}
-        {(activeGenre || activeStatus || activeType || activeSearch) && (
+        {(activeGenre || activeStatus || activeSearch) && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-1.5 text-xs bg-slate-900 border border-white/5 text-slate-300 hover:text-white px-3 py-2 rounded-lg cursor-pointer"
+            className="flex items-center gap-1.5 text-xs bg-slate-900 border border-white/5 text-slate-300 hover:text-white px-3 py-2 rounded-lg cursor-pointer transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Filtrlarni tozalash
@@ -125,29 +122,12 @@ function CatalogContent() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* 1. Sidebar Filters */}
+        {/* Filters Sidebar */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="glass-card p-5 rounded-2xl border border-white/5 space-y-6">
+          <div className="glass-card p-5 rounded-2xl border border-white/5 space-y-6 bg-slate-900/20">
             <div className="flex items-center gap-2 border-b border-white/5 pb-2 text-slate-200 font-bold text-sm">
               <Filter className="w-4.5 h-4.5 text-violet-400" />
-              <span>{t('catalog.filters')}</span>
-            </div>
-
-            {/* Type Filter */}
-            <div className="space-y-2">
-              <label className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-                {t('catalog.typeFilter')}
-              </label>
-              <select
-                value={activeType}
-                onChange={(e) => updateFilters('type', e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 text-slate-200 text-sm px-3.5 py-2.5 rounded-xl outline-none focus:border-violet-500 transition-colors"
-              >
-                <option value="">{t('common.all')}</option>
-                <option value="manhwa">{t('catalog.typeManhwa')}</option>
-                <option value="manga">{t('catalog.typeManga')}</option>
-                <option value="manhua">{t('catalog.typeManhua')}</option>
-              </select>
+              <span>Filtrlar</span>
             </div>
 
             {/* Status Filter */}
@@ -168,7 +148,7 @@ function CatalogContent() {
               </select>
             </div>
 
-            {/* Sort Filter */}
+            {/* Sorting */}
             <div className="space-y-2">
               <label className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
                 {t('catalog.sortBy')}
@@ -184,16 +164,16 @@ function CatalogContent() {
               </select>
             </div>
 
-            {/* Genres list checkboxes / filter */}
+            {/* Genre List */}
             <div className="space-y-2">
               <label className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
                 {t('catalog.genreFilter')}
               </label>
-              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-1 max-h-60 overflow-y-auto pr-1">
                 <button
                   onClick={() => updateFilters('genre', '')}
-                  className={`text-left text-xs px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    activeGenre === '' ? 'bg-violet-500/10 text-violet-400 font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                  className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                    !activeGenre ? 'bg-violet-600/10 text-violet-400 font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   {t('common.all')}
@@ -202,8 +182,8 @@ function CatalogContent() {
                   <button
                     key={genre.id}
                     onClick={() => updateFilters('genre', genre.slug)}
-                    className={`text-left text-xs px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                      activeGenre === genre.slug ? 'bg-violet-500/10 text-violet-400 font-bold border-l-2 border-violet-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                    className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                      activeGenre === genre.slug ? 'bg-violet-600/10 text-violet-400 font-bold' : 'text-slate-400 hover:text-white'
                     }`}
                   >
                     {genre.name}
@@ -211,67 +191,57 @@ function CatalogContent() {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* 2. Catalog Grid */}
+        {/* Catalog List */}
         <div className="lg:col-span-3 space-y-8">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 animate-pulse">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="aspect-[3/4] bg-slate-900/40 rounded-xl animate-pulse border border-white/5"></div>
+                <div key={i} className="h-64 bg-slate-900/60 rounded-2xl border border-white/5"></div>
               ))}
             </div>
-          ) : seriesList.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-                {seriesList.map((series) => (
-                  <SeriesCard key={`${series.type || 'series'}-${series.id}`} series={series} />
-                ))}
-              </div>
-
-              {/* Pagination controls */}
-              {pagination.lastPage > 1 && (
-                <div className="flex items-center justify-center space-x-2 border-t border-white/5 pt-8">
-                  <button
-                    onClick={() => handlePageChange(pagination.currentPage - 1)}
-                    disabled={pagination.currentPage === 1}
-                    className="p-2 rounded-lg bg-slate-900 border border-white/5 text-slate-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-
-                  <span className="text-sm text-slate-400 font-semibold px-4">
-                    {pagination.currentPage} / {pagination.lastPage}
-                  </span>
-
-                  <button
-                    onClick={() => handlePageChange(pagination.currentPage + 1)}
-                    disabled={pagination.currentPage === pagination.lastPage}
-                    className="p-2 rounded-lg bg-slate-900 border border-white/5 text-slate-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </>
+          ) : seriesList.length === 0 ? (
+            <div className="glass-card p-12 text-center text-slate-400 rounded-2xl border border-white/5 py-24">
+              Ko'rsatilgan filtrlar bo'yicha hech qanday novel topilmadi.
+            </div>
           ) : (
-            <div className="glass-card p-12 rounded-2xl border border-white/5 text-center text-slate-400">
-              <SlidersHorizontal className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-sm">{t('common.noData')}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {seriesList.map((series) => (
+                <div key={series.id} className="relative">
+                  <SeriesCard series={series} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination.lastPage > 1 && (
+            <div className="flex justify-center items-center gap-2 pt-6">
+              <button
+                disabled={pagination.currentPage === 1}
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                className="p-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 hover:text-white rounded-xl border border-white/5 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <span className="text-xs text-slate-400 font-bold px-4">
+                Sahifa {pagination.currentPage} / {pagination.lastPage}
+              </span>
+
+              <button
+                disabled={pagination.currentPage === pagination.lastPage}
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                className="p-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 hover:text-white rounded-xl border border-white/5 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-export default function CatalogPage() {
-  return (
-    <Suspense fallback={<div className="p-12 text-center text-slate-400">Yuklanmoqda...</div>}>
-      <CatalogContent />
-    </Suspense>
   );
 }

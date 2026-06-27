@@ -42,6 +42,7 @@ export default function AdminPackagesPage() {
   const [cardHolder, setCardHolder] = useState<string>('');
   const [cardBank, setCardBank] = useState<string>('');
 
+  const [creatorFee, setCreatorFee] = useState<string>('50000');
   const [error, setError] = useState<string | null>(null);
 
   const loadData = async () => {
@@ -66,11 +67,59 @@ export default function AdminPackagesPage() {
     }
   };
 
+  const fetchSettings = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/settings`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCreatorFee(String(data.novel_creator_monthly_fee));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       loadData();
+      fetchSettings();
     }
   }, [token]);
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/admin/settings`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          novel_creator_monthly_fee: parseInt(creatorFee),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCreatorFee(String(data.novel_creator_monthly_fee));
+        alert('Creator obuna narxi muvaffaqiyatli o\'zgartirildi.');
+      } else {
+        const data = await res.json();
+        setError(data.message || 'Sozlamalarni saqlashda xatolik.');
+      }
+    } catch (err) {
+      setError('Tarmoq xatosi.');
+    }
+  };
 
   const handleAddPackage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,6 +392,34 @@ export default function AdminPackagesPage() {
               >
                 <Plus className="w-4 h-4" />
                 <span>{t('adminPanel.addPaymentMethod')}</span>
+              </button>
+            </form>
+          </div>
+
+          {/* CREATOR SOZLAMALARI (Creator settings) */}
+          <div className="glass-card p-5 rounded-2xl border border-white/5 space-y-4 bg-slate-900/40">
+            <h3 className="font-bold text-slate-200 text-sm flex items-center gap-2 border-b border-white/5 pb-2">
+              <Coins className="w-5 h-5 text-amber-400" />
+              Creator Sozlamalari
+            </h3>
+            
+            <form onSubmit={handleSaveSettings} className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Creator bo'lish oylik obuna narxi (UZS)</label>
+                <input
+                  type="number"
+                  value={creatorFee}
+                  onChange={(e) => setCreatorFee(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 text-slate-200 text-xs px-3 py-2.5 rounded-xl outline-none focus:border-violet-500 transition-colors"
+                  placeholder="Masalan: 50000"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                Sozlamalarni saqlash
               </button>
             </form>
           </div>

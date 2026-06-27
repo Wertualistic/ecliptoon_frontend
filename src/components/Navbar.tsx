@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCart } from '@/context/CartContext';
-import { Menu, X, Coins, Bookmark, UserRound, ShieldAlert, LogOut, Search, Compass, BookOpen, Trophy, ShoppingBag, ShoppingCart, ChevronDown, Newspaper } from 'lucide-react';
+import { Menu, X, Coins, Bookmark, UserRound, ShieldAlert, LogOut, Search, Compass, BookOpen, Trophy, ShoppingBag, ShoppingCart, ChevronDown, Newspaper, FileText } from 'lucide-react';
 import { StrawberryIcon } from '@/components/StrawberryIcon';
 
 export function Navbar() {
@@ -68,6 +68,10 @@ export function Navbar() {
                     <Compass className="w-4 h-4 text-emerald-400" />
                     {t('common.catalog')}
                   </Link>
+                  <Link href="/novels" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                    <BookOpen className="w-4 h-4 text-violet-400" />
+                    Novellalar
+                  </Link>
                   <Link href="/search" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
                     <Search className="w-4 h-4 text-slate-400" />
                     {t('common.search')}
@@ -80,9 +84,23 @@ export function Navbar() {
                     <ShoppingBag className="w-4 h-4 text-violet-400" />
                     {t('shop.title')}
                   </Link>
+                  <Link href="/apply-novel-creator" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-t border-white/5 mt-1 pt-2">
+                    <FileText className="w-4 h-4 text-amber-400 animate-pulse" />
+                    <span className="font-semibold text-amber-300">Novel Creator bo'lish</span>
+                  </Link>
                 </div>
               </div>
             </div>
+
+            <Link
+              href="/novels"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
+                isActive('/novels') ? 'text-violet-400 bg-violet-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/40'
+              }`}
+            >
+              <BookOpen className="w-4 h-4 text-violet-400" />
+              Novellalar
+            </Link>
           </div>
 
           {/* User Section (Desktop) */}
@@ -90,7 +108,7 @@ export function Navbar() {
             {isAuthenticated && user ? (
               <>
                 {/* Admin button if role matches */}
-                {(user.role === 'admin' || user.role === 'moderator' || user.role === 'translator') && (
+                {(user.role === 'admin' || user.role === 'moderator' || user.role === 'translator' || user.role === 'novel_creator') && (
                   <Link
                     href="/admin"
                     className="flex items-center gap-1 bg-red-950/60 border border-red-500/30 text-red-300 px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap hover:bg-red-900/50 transition-colors"
@@ -259,6 +277,14 @@ export function Navbar() {
             {t('common.catalog')}
           </Link>
           <Link
+            href="/novels"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800/50"
+          >
+            <BookOpen className="w-5 h-5 text-violet-400" />
+            Novellalar
+          </Link>
+          <Link
             href="/search"
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-3 px-3 py-2.5 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800/50"
@@ -282,12 +308,20 @@ export function Navbar() {
             <ShoppingBag className="w-5 h-5 text-violet-400" />
             {t('shop.title')}
           </Link>
+          <Link
+            href="/apply-novel-creator"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-base font-medium text-amber-300 hover:bg-amber-950/20 border-t border-white/5 mt-1 pt-2.5"
+          >
+            <FileText className="w-5 h-5 text-amber-400" />
+            Novel Creator bo'lish
+          </Link>
 
           {isAuthenticated && user ? (
             <>
               <div className="border-t border-white/5 my-2 pt-2"></div>
               
-              {(user.role === 'admin' || user.role === 'moderator' || user.role === 'translator') && (
+              {(user.role === 'admin' || user.role === 'moderator' || user.role === 'translator' || user.role === 'novel_creator') && (
                 <Link
                   href="/admin"
                   onClick={() => setMobileMenuOpen(false)}
