@@ -13,7 +13,7 @@ interface Genre {
   slug: string;
 }
 
-export default function NovelsCatalogPage() {
+function NovelsCatalogContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -243,5 +243,13 @@ export default function NovelsCatalogPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NovelsCatalogPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center text-slate-400">Yuklanmoqda...</div>}>
+      <NovelsCatalogContent />
+    </React.Suspense>
   );
 }
