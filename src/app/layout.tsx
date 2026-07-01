@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './Providers';
 import Script from 'next/script';
+import { TelegramInit } from '@/components/TelegramInit';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://ecliptoon.uz'),
@@ -90,9 +91,14 @@ export default function RootLayout({
           async
           src="https://yandex.ru/ads/system/context.js"
         />
+        <script
+          src="https://telegram.org/js/telegram-web-app.js"
+          defer
+        />
       </head>
       <body className="bg-slate-950 text-slate-50 min-h-full flex flex-col antialiased">
         <Providers>
+          <TelegramInit />
           {children}
         </Providers>
       </body>
