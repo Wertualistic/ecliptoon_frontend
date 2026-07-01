@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth, API_URL } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { SeriesCard, getImageUrl } from '@/components/SeriesCard';
-import { Star, MessageSquare, Eye, Heart, Bookmark, BookmarkCheck, ArrowLeft, X, Copy, Check, Upload, Clock, Sparkles, CheckCircle2, Lock, Unlock, AlertCircle } from 'lucide-react';
+import { Star, MessageSquare, Eye, Heart, Bookmark, BookmarkCheck, ArrowLeft, X, Copy, Check, Upload, Clock, Sparkles, CheckCircle2, Lock, Unlock, AlertCircle, UserRound } from 'lucide-react';
 import { StrawberryIcon } from '@/components/StrawberryIcon';
 
 interface Chapter {
@@ -384,6 +384,15 @@ export default function NovelDetailPage() {
             </div>
             <h1 className="text-3xl font-extrabold text-white">{novel.title}</h1>
             
+            {novel.translator && (
+              <div className="pt-1 pb-1">
+                <Link href={`/translators/${novel.translator.id}`} className="inline-flex items-center gap-2 text-sm text-violet-400 hover:text-violet-300 font-semibold bg-violet-500/10 px-3 py-1 rounded-lg border border-violet-500/20 transition-all hover:scale-105 active:scale-95">
+                  <UserRound className="w-4 h-4" />
+                  Muallif: {novel.translator.name}
+                </Link>
+              </div>
+            )}
+
             {novel.alternative_titles && (
               <p className="text-xs text-slate-400">
                 Alternative: {JSON.parse(novel.alternative_titles).join(', ')}

@@ -31,7 +31,7 @@ export default function TranslatorProfilePage() {
           setIsFollowing(data.is_following);
         }
       } catch (error) {
-        console.error('Failed to fetch translator details', error);
+        console.error('Failed to fetch creator details', error);
       } finally {
         setLoading(false);
       }
@@ -83,11 +83,22 @@ export default function TranslatorProfilePage() {
   if (!translator) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-white mb-4">Tarjimon topilmadi</h1>
+        <h1 className="text-2xl font-bold text-white mb-4">Muallif / Tarjimon topilmadi</h1>
         <Link href="/catalog" className="text-violet-400 hover:text-violet-300">Katalogga qaytish</Link>
       </div>
     );
   }
+
+  const projects = translator.projects || translator.translated_series || [];
+  const roleBadge = translator.role === 'novel_creator' 
+    ? "Rasmiy Novel Muallifi" 
+    : translator.role === 'admin' 
+    ? "Ma'mur & Ijodkor" 
+    : "Rasmiy Tarjimon";
+
+  const projectsTitle = translator.role === 'novel_creator'
+    ? "Muallifning novellalari va loyihalari"
+    : "Muallif / Tarjimonning loyihalari";
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -96,7 +107,7 @@ export default function TranslatorProfilePage() {
         Katalogga qaytish
       </Link>
 
-      {/* Translator Profile Header */}
+      {/* Profile Header */}
       <div className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 md:p-10 mb-12 flex flex-col md:flex-row items-center gap-8 shadow-xl">
         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-slate-800 border-4 border-violet-500/20 shrink-0">
           {translator.avatar_url ? (
@@ -110,7 +121,7 @@ export default function TranslatorProfilePage() {
         
         <div className="text-center md:text-left flex-1">
           <div className="inline-block px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-sm font-semibold mb-3">
-            Rasmiy Tarjimon
+            {roleBadge}
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-4">{translator.name}</h1>
           
@@ -131,7 +142,7 @@ export default function TranslatorProfilePage() {
         </div>
         <div className="flex gap-4 min-w-[150px]">
           <div className="bg-slate-800/50 rounded-2xl p-4 text-center flex-1 border border-white/5 shadow-inner">
-            <div className="text-2xl font-black text-white mb-1">{translator.translated_series?.length || 0}</div>
+            <div className="text-2xl font-black text-white mb-1">{projects.length}</div>
             <div className="text-xs text-slate-400 font-medium">Loyiha</div>
           </div>
           <div className="bg-slate-800/50 rounded-2xl p-4 text-center flex-1 border border-white/5 shadow-inner">
@@ -168,17 +179,17 @@ export default function TranslatorProfilePage() {
         </button>
       </div>
 
-      {/* Translated Series Grid */}
+      {/* Projects Grid */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          Tarjimonning loyihalari
+          {projectsTitle}
         </h2>
       </div>
 
-      {translator.translated_series && translator.translated_series.length > 0 ? (
+      {projects.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          {translator.translated_series.map((series: any) => (
-            <SeriesCard key={series.id} series={series} />
+          {projects.map((item: any) => (
+            <SeriesCard key={`${item.type || 'series'}-${item.id}`} series={item} />
           ))}
         </div>
       ) : (
